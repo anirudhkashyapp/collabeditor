@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class CollabeditorApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(CollabeditorApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(CollabeditorApplication.class, args);
+    }
 }
