@@ -7,9 +7,11 @@ import org.springframework.web.socket.config.annotation.*;
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
 
+    private final CollabHandler collabHandler = new CollabHandler();
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new CollabHandler(), "/collab")
+        registry.addHandler(collabHandler, "/collab/**")
                 .setAllowedOrigins("*");
     }
-} 
+}
