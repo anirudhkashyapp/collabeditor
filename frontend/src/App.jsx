@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Editor from '@monaco-editor/react';
+import AIChat from './AIChat';
 
 const COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'];
 const MY_COLOR = COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -132,6 +133,7 @@ function EditorPage({ roomId, name, initialContent }) {
   const [messages, setMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [showChat, setShowChat] = useState(true);
+  const [chatMode, setChatMode] = useState('team');
 
   useEffect(() => {
     const ws = new WebSocket(`ws://localhost:8080/collab/${roomId}`);
@@ -255,43 +257,69 @@ function EditorPage({ roomId, name, initialContent }) {
 
         {showChat && (
           <div style={{
-            width: '280px', display: 'flex', flexDirection: 'column',
+            width: '300px', display: 'flex', flexDirection: 'column',
             background: '#252525', borderLeft: '1px solid #3d3d3d'
           }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid #3d3d3d' }}>
-              <span style={{ color: '#fff', fontSize: '14px', fontWeight: 600 }}>Chat</span>
-            </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {messages.length === 0 && (
-                <p style={{ color: '#555', fontSize: '13px' }}>No messages yet...</p>
-              )}
-              {messages.map((m, i) => (
-                <div key={i}>
-                  <span style={{ color: m.color, fontSize: '12px', fontWeight: 600 }}>{m.name}</span>
-                  <p style={{ color: '#ccc', fontSize: '13px', margin: '2px 0 0' }}>{m.text}</p>
-                </div>
-              ))}
-            </div>
-            <div style={{ padding: '12px', borderTop: '1px solid #3d3d3d', display: 'flex', gap: '8px' }}>
-              <input
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && sendChat()}
-                placeholder="Type a message..."
+            <div style={{ borderBottom: '1px solid #3d3d3d', display: 'flex' }}>
+              <button
+                onClick={() => setChatMode('team')}
                 style={{
-                  flex: 1, padding: '8px 10px', background: '#2d2d2d',
-                  border: '1px solid #444', borderRadius: '4px',
-                  color: '#fff', fontSize: '13px'
-                }}
-              />
-              <button onClick={sendChat} style={{
-                background: '#4ECDC4', color: '#000', border: 'none',
-                borderRadius: '4px', padding: '8px 12px', fontSize: '13px',
-                cursor: 'pointer', fontWeight: 600
-              }}>
-                Send
+                  flex: 1, padding: '10px', background: chatMode === 'team' ? '#3d3d3d' : 'transparent',
+                  color: chatMode === 'team' ? '#fff' : '#888', border: 'none',
+                  borderBottom: chatMode === 'team' ? '2px solid #4ECDC4' : '2px solid transparent',
+                  cursor: 'pointer', fontSize: '13px', fontWeight: 600
+                }}>
+                Team chat
+              </button>
+              <button
+                onClick={() => setChatMode('ai')}
+                style={{
+                  flex: 1, padding: '10px', background: chatMode === 'ai' ? '#3d3d3d' : 'transparent',
+                  color: chatMode === 'ai' ? '#4ECDC4' : '#888', border: 'none',
+                  borderBottom: chatMode === 'ai' ? '2px solid #4ECDC4' : '2px solid transparent',
+                  cursor: 'pointer', fontSize: '13px', fontWeight: 600
+                }}>
+                AI assistant
               </button>
             </div>
+
+            {chatMode === 'team' ? (
+              <>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {messages.length === 0 && (
+                    <p style={{ color: '#555', fontSize: '13px' }}>No messages yet...</p>
+                  )}
+                  {messages.map((m, i) => (
+                    <div key={i}>
+                      <span style={{ color: m.color, fontSize: '12px', fontWeight: 600 }}>{m.name}</span>
+                      <p style={{ color: '#ccc', fontSize: '13px', margin: '2px 0 0' }}>{m.text}</p>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ padding: '12px', borderTop: '1px solid #3d3d3d', display: 'flex', gap: '8px' }}>
+                  <input
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && sendChat()}
+                    placeholder="Type a message..."
+                    style={{
+                      flex: 1, padding: '8px 10px', background: '#2d2d2d',
+                      border: '1px solid #444', borderRadius: '4px',
+                      color: '#fff', fontSize: '13px'
+                    }}
+                  />
+                  <button onClick={sendChat} style={{
+                    background: '#4ECDC4', color: '#000', border: 'none',
+                    borderRadius: '4px', padding: '8px 12px', fontSize: '13px',
+                    cursor: 'pointer', fontWeight: 600
+                  }}>
+                    Send
+                  </button>
+                </div>
+              </>
+            ) : (
+              <AIChat getCode={() => editorRef.current?.getValue() || ''} />
+            )}
           </div>
         )}
       </div>
