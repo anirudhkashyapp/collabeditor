@@ -31,6 +31,21 @@ public class RoomController {
         return ResponseEntity.ok(Map.of("message", "Room created", "roomId", roomId));
     }
 
+    @PostMapping("/save")
+    public ResponseEntity<?> saveCode(@RequestBody Map<String, String> body) {
+    String roomId = body.get("roomId");
+    String content = body.get("content");
+
+    return roomRepository.findByRoomId(roomId)
+        .map(room -> {
+            room.setContent(content);
+            roomRepository.save(room);
+            return ResponseEntity.ok(Map.of("message", "Saved"));
+        })
+        .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(Map.of("error", "Room not found")));
+    }
+
     @PostMapping("/join")
     public ResponseEntity<?> joinRoom(@RequestBody Map<String, String> body) {
         String roomId = body.get("roomId");

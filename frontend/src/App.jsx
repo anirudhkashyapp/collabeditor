@@ -127,6 +127,7 @@ function LandingPage({ onEnterRoom }) {
 function EditorPage({ roomId, name, initialContent }) {
   const editorRef = useRef(null);
   const wsRef = useRef(null);
+  const saveTimeout = useRef(null);
   const [connected, setConnected] = useState(false);
   const [users, setUsers] = useState([]);
   const [language, setLanguage] = useState('javascript');
@@ -175,6 +176,14 @@ function EditorPage({ roomId, name, initialContent }) {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ type: 'code', content: value, id: MY_ID }));
     }
+    clearTimeout(saveTimeout.current);
+    saveTimeout.current = setTimeout(() => {
+      fetch('http://localhost:8080/api/rooms/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, content: value })
+      });
+    }, 2000);
   }
 
   function sendChat() {
