@@ -151,14 +151,23 @@ function EditorPage({ roomId, name, initialContent }) {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.type === 'code') {
-        const editor = editorRef.current;
-        if (editor && data.content !== editor.getValue()) {
-          const position = editor.getPosition();
-          editor.setValue(data.content);
-          editor.setPosition(position);
-        }
-      } else if (data.type === 'users') {
+     if (data.type === 'code') {
+  const editor = editorRef.current;
+  if (editor) {
+    const currentValue = editor.getValue();
+    if (data.content !== currentValue) {
+      const position = editor.getPosition();
+      const selections = editor.getSelections();
+      editor.executeEdits('remote', [{
+        range: editor.getModel().getFullModelRange(),
+        text: data.content,
+        forceMoveMarkers: true
+      }]);
+      if (position) editor.setPosition(position);
+      if (selections) editor.setSelections(selections);
+    }
+  }
+}else if (data.type === 'users') {
         setUsers(data.users);
       } else if (data.type === 'chat') {
         setMessages(prev => [...prev, { name: data.name, text: data.text, color: data.color }]);
@@ -347,4 +356,4 @@ export default function App() {
 
   if (!room) return <LandingPage onEnterRoom={handleEnterRoom} />;
   return <EditorPage roomId={room.roomId} name={room.name} initialContent={room.content} />;
-}
+} 
