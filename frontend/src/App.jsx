@@ -151,20 +151,19 @@ function EditorPage({ roomId, name, initialContent }) {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-     if (data.type === 'code') {
+    if (data.type === 'code') {
   const editor = editorRef.current;
   if (editor) {
+    const model = editor.getModel();
     const currentValue = editor.getValue();
-    if (data.content !== currentValue) {
+    if (model && data.content !== currentValue) {
       const position = editor.getPosition();
-      const selections = editor.getSelections();
-      editor.executeEdits('remote', [{
-        range: editor.getModel().getFullModelRange(),
-        text: data.content,
-        forceMoveMarkers: true
-      }]);
+      model.pushEditOperations(
+        [],
+        [{ range: model.getFullModelRange(), text: data.content }],
+        () => null
+      );
       if (position) editor.setPosition(position);
-      if (selections) editor.setSelections(selections);
     }
   }
 }else if (data.type === 'users') {
