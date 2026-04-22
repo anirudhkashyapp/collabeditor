@@ -5,6 +5,8 @@ import AIChat from './AIChat';
 const COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'];
 const MY_COLOR = COLORS[Math.floor(Math.random() * COLORS.length)];
 const MY_ID = Math.random().toString(36).substr(2, 9);
+const BACKEND_URL = 'https://collabeditor-production-e9f4.up.railway.app';
+const WS_URL = 'wss://collabeditor-production-e9f4.up.railway.app';
 
 function LandingPage({ onEnterRoom }) {
   const [mode, setMode] = useState('choose');
@@ -19,7 +21,7 @@ function LandingPage({ onEnterRoom }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:8080/api/rooms/create', {
+      const res = await fetch(`${BACKEND_URL}/api/rooms/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId, password })
@@ -39,7 +41,7 @@ function LandingPage({ onEnterRoom }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:8080/api/rooms/join', {
+      const res = await fetch(`${BACKEND_URL}/api/rooms/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId, password })
@@ -137,7 +139,7 @@ function EditorPage({ roomId, name, initialContent }) {
   const [chatMode, setChatMode] = useState('team');
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:8080/collab/${roomId}`);
+    const ws = new WebSocket(`${WS_URL}/collab/${roomId}`);
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -178,7 +180,7 @@ function EditorPage({ roomId, name, initialContent }) {
     }
     clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(() => {
-      fetch('http://localhost:8080/api/rooms/save', {
+      fetch(`${BACKEND_URL}/api/rooms/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId, content: value })
