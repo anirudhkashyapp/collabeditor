@@ -130,6 +130,7 @@ function EditorPage({ roomId, name, initialContent }) {
   const editorRef = useRef(null);
   const wsRef = useRef(null);
   const saveTimeout = useRef(null);
+  const isRemoteUpdate = useRef(false);
   const [connected, setConnected] = useState(false);
   const [users, setUsers] = useState([]);
   const [language, setLanguage] = useState('javascript');
@@ -151,22 +152,16 @@ function EditorPage({ roomId, name, initialContent }) {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-    if (data.type === 'code') {
-  const editor = editorRef.current;
-  if (editor) {
-    const model = editor.getModel();
-    const currentValue = editor.getValue();
-    if (model && data.content !== currentValue) {
-      const position = editor.getPosition();
-      model.pushEditOperations(
-        [],
-        [{ range: model.getFullModelRange(), text: data.content }],
-        () => null
-      );
-      if (position) editor.setPosition(position);
-    }
-  }
-}else if (data.type === 'users') {
+      if (data.type === 'code') {
+        const editor = editorRef.current;
+        if (editor && data.content !== editor.getValue()) {
+          isRemoteUpdate.current = true;
+          const position = editor.getPosition();
+          editor.setValue(data.content);
+          editor.setPosition(position);
+          isRemoteUpdate.current = false;
+        }
+      } else if (data.type === 'users') {
         setUsers(data.users);
       } else if (data.type === 'chat') {
         setMessages(prev => [...prev, { name: data.name, text: data.text, color: data.color }]);
@@ -182,6 +177,7 @@ function EditorPage({ roomId, name, initialContent }) {
   }
 
   function handleChange(value) {
+    if (isRemoteUpdate.current) return;
     const ws = wsRef.current;
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ type: 'code', content: value, id: MY_ID }));
@@ -355,4 +351,4 @@ export default function App() {
 
   if (!room) return <LandingPage onEnterRoom={handleEnterRoom} />;
   return <EditorPage roomId={room.roomId} name={room.name} initialContent={room.content} />;
-} 
+}
