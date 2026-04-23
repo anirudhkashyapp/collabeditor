@@ -75,6 +75,9 @@ VITE_GROQ_API_KEY=your_groq_api_key
 
 Open **http://localhost:5173** in your browser.
 
+## Live Demo
+**https://collabeditor-beryl.vercel.app**
+
 ## Author
 
 Built by Anirudh Kashyap as a portfolio project to learn full-stack development, real-time systems, and WebSocket architecture.
